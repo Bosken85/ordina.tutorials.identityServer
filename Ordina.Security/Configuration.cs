@@ -59,7 +59,7 @@ namespace Ordina.Security
                 {
                     new Claim("given_name", "Kevin"),
                     new Claim("family_name", "Bosteels"),
-                    new Claim("address", "Rooien 96, 9280 Wieze, Belgium")
+                    new Claim("address", "Red Street 16, 1000 Brussels, Belgium")
                 }
             }
         };
