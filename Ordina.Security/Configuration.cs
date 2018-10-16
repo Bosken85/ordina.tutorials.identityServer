@@ -30,6 +30,7 @@ namespace Ordina.Security
                 ClientId = "mvc",
                 ClientName = "MVC Client",
                 AllowedGrantTypes = GrantTypes.Hybrid,
+                AlwaysIncludeUserClaimsInIdToken = false, //is the default and is done to minimize the payload of the id_token
                 ClientSecrets =
                 {
                     new Secret("secret".Sha256())
