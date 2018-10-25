@@ -1,0 +1,7 @@
+{
+  "name": "ionic.client.ordina",
+  "integrations": {
+    "cordova": {}
+  },
+  "type": "ionic-angular"
+}

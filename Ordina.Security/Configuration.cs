@@ -45,6 +45,32 @@ namespace Ordina.Security
                     "demo_api"
                 },
                 AllowOfflineAccess = true
+            },
+            new Client()
+            {
+                ClientId = "ionic-auth-code",
+                ClientName = "Ionic Auth Code Client",
+                AllowedGrantTypes = GrantTypes.Hybrid,
+                AlwaysIncludeUserClaimsInIdToken = false, //is the default and is done to minimize the payload of the id_token
+                ClientSecrets =
+                {
+                    new Secret("secret".Sha256())
+                },
+                RedirectUris           = { "ordinaionic://home" },
+                PostLogoutRedirectUris = { "ordinaionic://landing" },
+                AllowedScopes =
+                {
+                    IdentityServerConstants.StandardScopes.OpenId,
+                    IdentityServerConstants.StandardScopes.Profile,
+                    IdentityServerConstants.StandardScopes.Address,
+                    "demo_api"
+                },
+                AllowOfflineAccess = true,
+                RequireConsent = false,
+                RequirePkce = true,
+                RequireClientSecret = false,
+                AccessTokenLifetime = 30,
+                AllowedCorsOrigins =  { "http://localhost:8101", "http://localhost:8080", "http://localhost:8100" }
             }
         };
 
