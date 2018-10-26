@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AuthorizationNotifier, AuthorizationRequest, AuthorizationServiceConfiguration, BaseTokenRequestHandler, DefaultCrypto, GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN, LocalStorageBackend, StorageBackend, StringMap, TokenRequest, TokenResponse } from '@openid/appauth';
+import { AuthorizationNotifier, AuthorizationRequest, BaseTokenRequestHandler, DefaultCrypto, GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN, LocalStorageBackend, StorageBackend, TokenRequest, TokenResponse } from '@openid/appauth';
 import { AngularRequestor } from './app-auth/angularRequestor';
 import { IonicAppBrowserProvider } from './app-auth/IonicAppBrowser';
 import { IonicAuthorizationRequestHandler } from './app-auth/ionicAuthorizationRequestHandler';
@@ -7,16 +7,14 @@ import { IonicAuthorizationServiceConfiguration } from './app-auth/IonicAuthoriz
 
 const OpenIDConnectURL = "https://localhost:44385";
 const ClientId = "ionic-auth-code";
-const ClientSecret = undefined;
 const Scopes = "openid offline_access profile";
-const RedirectUri = "ordinaionic://home";
+const RedirectUri = "ordinaionic://profile";
 //URL Example: com.my.app://token
-const EndSessionRedirectUri = "ordinaionic://landing";
+const EndSessionRedirectUri = "ordinaionic://home";
 //this should be different from redirectURI
 
 //CONST values (magic strings):
 const TOKEN_RESPONSE_KEY = "token_response";
-const AUTH_CODE_KEY = "authorization_code"
 const AUTHORIZATION_RESPONSE_KEY = "auth_response";
 
 const nowInSeconds = () => Math.round(new Date().getTime() / 1000);
@@ -36,15 +34,15 @@ export class AuthServiceProvider {
     private tokenResponse: TokenResponse;
 
     private code: string;
+    private code_verifier: string;
 
     private authorizationHandler: IonicAuthorizationRequestHandler;
     // private endSessionHandler: IonicEndSessionHandler;
     private notifier: AuthorizationNotifier;
 
-    private configuration: AuthorizationServiceConfiguration;
+    private configuration: IonicAuthorizationServiceConfiguration;
 
     constructor(private requestor: AngularRequestor, private ionicBrowserView: IonicAppBrowserProvider) {
-        debugger;
         this.storageBackend = new LocalStorageBackend();
         this.fetchDiscovery(this.requestor);
 
@@ -64,6 +62,7 @@ export class AuthServiceProvider {
             console.log('Authorization request complete ', request, response, error);
             if (response) {
                 this.code = response.code;
+                this.code_verifier = request.internal['code_verifier'];
                 await this.getTokensFlow();
             }
         });
@@ -77,10 +76,14 @@ export class AuthServiceProvider {
     }
 
     private async getTokensFlow() {
-        await this.requestAccessToken();
+        try {
+            await this.requestAccessToken();
 
-        if (this.isAuthenticated()) {
-            this.authFinishedCallback()
+            if (this.isAuthenticated()) {
+                this.authFinishedCallback()
+            }
+        } catch (error) {
+            this.authCompletedReject(error);
         }
     }
 
@@ -91,7 +94,7 @@ export class AuthServiceProvider {
 
         try {
             if (this.tokenResponse && this.tokenResponse.isValid()) {
-                this.requestAccessToken();
+                this.requestWithRefreshToken();
                 //called auth finished callback again to push back to main page 
                 this.authFinishedCallback();
             } else {
@@ -103,32 +106,65 @@ export class AuthServiceProvider {
     }
 
     public async startupAsync(signInCallback: Function, signOutCallback: Function) {
-
         this.authFinishedCallback = signInCallback;
         this.authLogOutCallback = signOutCallback;
+        debugger;
         await this.tryLoadTokenResponseAsync();
-
     }
 
-    public async AuthorizationCallback(url: string) {
-
+    public AuthorizationCallback(url: string) {
         if ((url).indexOf(RedirectUri) === 0) {
+            debugger;
+            this.ionicBrowserView.CloseWindow();
+            this.storageBackend.setItem(AUTHORIZATION_RESPONSE_KEY, url).catch(error => {
+                this.authCompletedReject(error);
+            }).then(x => {
+                this.authorizationHandler.completeAuthorizationRequestIfPossible().catch(error => {
+                    this.authCompletedReject(error);
+                });
+            });
+
+        } else if ((url).indexOf(EndSessionRedirectUri) === 0) {
 
             this.ionicBrowserView.CloseWindow();
-            await this.storageBackend.setItem(AUTHORIZATION_RESPONSE_KEY, url);
-            this.authorizationHandler.completeAuthorizationRequestIfPossible();
+            this.storageBackend.clear()
+                .then(() => this.resetAuthCompletedPromise())
+                .then(() => {
+                    delete this.tokenResponse;
+                    delete this.code_verifier;
 
-        }
-        else if ((url).indexOf(EndSessionRedirectUri) === 0) {
-
-            this.ionicBrowserView.CloseWindow();
-            await this.storageBackend.clear();
-            await this.resetAuthCompletedPromise();
-            delete this.tokenResponse;
-
-            this.authLogOutCallback();
+                    this.authLogOutCallback();
+                })
+                .catch(error => {
+                    this.authCompletedReject(error);
+                });
         }
     }
+
+    // public async AuthorizationCallback(url: string) {
+    //     try {
+
+    //         if ((url).indexOf(RedirectUri) === 0) {
+
+    //             this.ionicBrowserView.CloseWindow();
+    //             await this.storageBackend.setItem(AUTHORIZATION_RESPONSE_KEY, url);
+    //             this.authorizationHandler.completeAuthorizationRequestIfPossible();
+
+    //         }
+    //         else if ((url).indexOf(EndSessionRedirectUri) === 0) {
+
+    //             this.ionicBrowserView.CloseWindow();
+    //             await this.storageBackend.clear();
+    //             await this.resetAuthCompletedPromise();
+    //             delete this.tokenResponse;
+    //             delete this.code_verifier;
+
+    //             this.authLogOutCallback();
+    //         }
+    //     } catch (error) {
+    //         this.authCompletedReject(error);
+    //     }
+    // }
 
     public async waitAuthenticated() {
         await this.authCompletedTask;
@@ -136,7 +172,7 @@ export class AuthServiceProvider {
         if (this.tokenResponse.accessToken && this.tokenResponse.refreshToken) {
             if (this.shouldRefresh()) {
                 //TODO: Refresh token
-                await this.requestAccessToken();
+                await this.requestWithRefreshToken();
             }
 
             return this.isAuthenticated()
@@ -166,8 +202,6 @@ export class AuthServiceProvider {
             response_type: AuthorizationRequest.RESPONSE_TYPE_CODE + " id_token",
             state: undefined,
             extras: {
-                // code_challenge: this.codeVerifier.challenge,
-                // code_challenge_method: this.codeVerifier.method,
                 'access_type': 'offline',
                 'nonce': this.generateNonce()
             }
@@ -181,12 +215,11 @@ export class AuthServiceProvider {
     private async requestAccessToken() {
         await this.discoveryTask;
 
-        this.tokenHandler = new BaseTokenRequestHandler();
+        this.tokenHandler = new BaseTokenRequestHandler(this.requestor);
 
         let request: TokenRequest | null = null;
 
         if (this.code) {
-            let extras: StringMap | undefined = undefined;
             // use the code to make the token request.
             request = new TokenRequest({
                 client_id: ClientId,
@@ -195,13 +228,25 @@ export class AuthServiceProvider {
                 code: this.code,
                 refresh_token: undefined,
                 extras: {
-                    "client_secret": ClientSecret
-                    // code_verifier: this.codeVerifier.verifier
+                    code_verifier: this.code_verifier
                 }
             });
-        } else if (this.tokenResponse) {
-            this.resetAuthCompletedPromise();
-            // use the token response to make a request for an access token
+            this.tokenHandler.performTokenRequest(this.configuration, request).then(async response => {
+                await this.saveTokenResponse(response);
+                this.authCompletedResolve();
+            }).catch(error => this.authCompletedReject(error));
+        }
+    }
+
+    private async requestWithRefreshToken() {
+        this.resetAuthCompletedPromise();
+        await this.discoveryTask;
+
+        this.tokenHandler = new BaseTokenRequestHandler(this.requestor);
+
+        let request: TokenRequest = null;
+
+        if (this.tokenResponse) {
             request = new TokenRequest({
                 client_id: ClientId,
                 redirect_uri: RedirectUri,
@@ -210,11 +255,14 @@ export class AuthServiceProvider {
                 refresh_token: this.tokenResponse.refreshToken,
                 extras: {}
             });
-        }
 
-        let response = await this.tokenHandler.performTokenRequest(this.configuration, request);
-        await this.saveTokenResponse(response);
-        this.authCompletedResolve();
+            let response = await this.tokenHandler.performTokenRequest(this.configuration, request);
+            await this.saveTokenResponse(response);
+
+            console.log("Trying to resolve authcompleted..");
+            this.authCompletedResolve();
+            console.log("Resolved authcompleted!");
+        }
     }
 
     public isAuthenticated() {

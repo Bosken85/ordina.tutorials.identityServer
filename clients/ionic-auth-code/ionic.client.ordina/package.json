@@ -29,6 +29,7 @@
     "@ionic/storage": "2.2.0",
     "@openid/appauth": "^1.1.1",
     "cordova-android": "7.1.1",
+    "cordova-plugin-customurlscheme": "4.3.0",
     "cordova-plugin-device": "^2.0.2",
     "cordova-plugin-inappbrowser": "3.0.0",
     "cordova-plugin-ionic-keyboard": "^2.1.3",
@@ -78,7 +79,13 @@
         "DEEPLINK_5_HOST": " "
       },
       "cordova-plugin-inappbrowser": {},
-      "cordova-plugin-safariviewcontroller": {}
+      "cordova-plugin-safariviewcontroller": {},
+      "cordova-plugin-customurlscheme": {
+        "URL_SCHEME": "ordinaionic",
+        "ANDROID_SCHEME": " ",
+        "ANDROID_HOST": " ",
+        "ANDROID_PATHPREFIX": "/"
+      }
     },
     "platforms": [
       "android"

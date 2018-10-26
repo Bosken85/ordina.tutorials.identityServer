@@ -102,5 +102,11 @@
     </plugin>
     <plugin name="cordova-plugin-inappbrowser" spec="3.0.0" />
     <plugin name="cordova-plugin-safariviewcontroller" spec="1.5.4" />
+    <plugin name="cordova-plugin-customurlscheme" spec="4.3.0">
+        <variable name="URL_SCHEME" value="ordinaionic" />
+        <variable name="ANDROID_SCHEME" value=" " />
+        <variable name="ANDROID_HOST" value=" " />
+        <variable name="ANDROID_PATHPREFIX" value="/" />
+    </plugin>
     <engine name="android" spec="7.1.1" />
 </widget>

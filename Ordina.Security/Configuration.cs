@@ -56,8 +56,8 @@ namespace Ordina.Security
                 {
                     new Secret("secret".Sha256())
                 },
-                RedirectUris           = { "ordinaionic://home" },
-                PostLogoutRedirectUris = { "ordinaionic://landing" },
+                RedirectUris           = { "ordinaionic://profile" },
+                PostLogoutRedirectUris = {  "ordinaionic://home" },
                 AllowedScopes =
                 {
                     IdentityServerConstants.StandardScopes.OpenId,
@@ -70,7 +70,7 @@ namespace Ordina.Security
                 RequirePkce = true,
                 RequireClientSecret = false,
                 AccessTokenLifetime = 30,
-                AllowedCorsOrigins =  { "http://localhost:8101", "http://localhost:8080", "http://localhost:8100" }
+                AllowedCorsOrigins =  { "http://localhost:8101", "http://localhost:8080", "http://localhost:8100",  "http://192.168.0.243:8100" }
             }
         };
 

@@ -1,23 +1,9 @@
 import { Injectable } from '@angular/core';
 import { InAppBrowser, InAppBrowserObject, InAppBrowserOptions } from '@ionic-native/in-app-browser';
 import { SafariViewController, SafariViewControllerOptions } from '@ionic-native/safari-view-controller';
-import { LocationLike } from '@openid/appauth';
 
 @Injectable()
-export class IonicAppBrowserProvider implements LocationLike {
-  hash: string;
-  host: string;
-  origin: string;
-  hostname: string;
-  pathname: string;
-  port: string;
-  protocol: string;
-  search: string;
-
-  async assign(url: string): Promise<void> {
-    return await this.ShowWindow(url)
-  }
-
+export class IonicAppBrowserProvider {
   private inAppLogin: InAppBrowserObject;
 
   constructor(private inAppBrowser: InAppBrowser, private safariViewController: SafariViewController) { }

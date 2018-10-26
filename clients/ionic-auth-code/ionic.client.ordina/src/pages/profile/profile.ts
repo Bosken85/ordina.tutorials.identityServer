@@ -25,8 +25,13 @@ export class ProfilePage {
     this.token = this.auth.getAccessTokenJson();
   }
 
-  async logout() {
-    await this.auth.signout()
+  async reload() {
+    await this.auth.waitAuthenticated();
+    this.token = this.auth.getAccessTokenJson();
+  }
+
+  logout(){
+    this.auth.signout();
   }
 
 }
