@@ -29,8 +29,10 @@ namespace Ordina.Security
             {
                 ClientId = "mvc",
                 ClientName = "MVC Client",
+
                 AllowedGrantTypes = GrantTypes.Hybrid,
                 AlwaysIncludeUserClaimsInIdToken = false, //is the default and is done to minimize the payload of the id_token
+
                 ClientSecrets =
                 {
                     new Secret("secret".Sha256())
@@ -45,6 +47,34 @@ namespace Ordina.Security
                     "demo_api"
                 },
                 AllowOfflineAccess = true
+            },
+            // SPA client using implicit flow
+            new Client
+            {
+                ClientId = "spa",
+                ClientName = "SPA Client",
+
+                AllowedGrantTypes = GrantTypes.Implicit,
+                AllowAccessTokensViaBrowser = true,
+
+                RedirectUris =
+                {
+                    "https://localhost:44397/index.html",
+                    "https://localhost:44397/callback.html",
+                    "https://localhost:44397/silent.html",
+                    "https://localhost:44397/popup.html",
+                },
+
+                PostLogoutRedirectUris = { "https://localhost:44397/index.html" },
+                AllowedCorsOrigins = { "https://localhost:44397" },
+
+                AllowedScopes =
+                {
+                    IdentityServerConstants.StandardScopes.OpenId,
+                    IdentityServerConstants.StandardScopes.Profile,
+                    IdentityServerConstants.StandardScopes.Address,
+                    "demo_api"
+                }
             }
         };
 
