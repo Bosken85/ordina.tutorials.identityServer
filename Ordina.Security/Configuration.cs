@@ -44,6 +44,7 @@ namespace Ordina.Security
                     IdentityServerConstants.StandardScopes.OpenId,
                     IdentityServerConstants.StandardScopes.Profile,
                     IdentityServerConstants.StandardScopes.Address,
+                    IdentityServerConstants.StandardScopes.Email,
                     "demo_api"
                 },
                 AllowOfflineAccess = true
@@ -56,23 +57,24 @@ namespace Ordina.Security
 
                 AllowedGrantTypes = GrantTypes.Implicit,
                 AllowAccessTokensViaBrowser = true,
+                RequireConsent = false, // Needs to be false to enable silent refreshes
+                AccessTokenLifetime = 30,
 
                 RedirectUris =
                 {
-                    "https://localhost:44397/index.html",
-                    "https://localhost:44397/callback.html",
-                    "https://localhost:44397/silent.html",
-                    "https://localhost:44397/popup.html",
+                    "https://localhost:44323/index.html",
+                    "https://localhost:44323/silent-refresh.html"
                 },
 
-                PostLogoutRedirectUris = { "https://localhost:44397/index.html" },
-                AllowedCorsOrigins = { "https://localhost:44397" },
+                PostLogoutRedirectUris = { "https://localhost:44323/index.html" },
+                AllowedCorsOrigins = { "https://localhost:44323" },
 
                 AllowedScopes =
                 {
                     IdentityServerConstants.StandardScopes.OpenId,
                     IdentityServerConstants.StandardScopes.Profile,
                     IdentityServerConstants.StandardScopes.Address,
+                    IdentityServerConstants.StandardScopes.Email,
                     "demo_api"
                 }
             }
@@ -89,6 +91,7 @@ namespace Ordina.Security
                 {
                     new Claim("given_name", "Kevin"),
                     new Claim("family_name", "Bosteels"),
+                    new Claim("email", "kevin.bosteels@gmail.com"),
                     new Claim("address", "Red Street 16, 1000 Brussels, Belgium")
                 }
             }

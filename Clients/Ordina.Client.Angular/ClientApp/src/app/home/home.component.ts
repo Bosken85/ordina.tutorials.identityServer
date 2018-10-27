@@ -1,30 +1,31 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { OAuthService } from 'angular-oauth2-oidc';
-import { authConfig } from '../auth.config';
 
 @Component({
   templateUrl: './home.component.html'
 })
-export class HomeComponent implements OnInit {
-  loginFailed: boolean = false;
+export class HomeComponent {
+  loginFailed = false;
   userProfile: object;
 
-  constructor(private oauthService: OAuthService) {
-    // Tweak config for implicit flow.
-    // This is just needed b/c this demo uses both,
-    // implicit flow as well as password flow
-    this.oauthService.configure(authConfig);
-    this.oauthService.loadDiscoveryDocument();
+
+  get givenName() {
+    const claims = this.oauthService.getIdentityClaims();
+    if (!claims) { return null; }
+    return claims['given_name'];
   }
 
-  ngOnInit() {
-    /*
-            this.oauthService.loadDiscoveryDocumentAndTryLogin().then(_ => {
-                if (!this.oauthService.hasValidIdToken() || !this.oauthService.hasValidAccessToken()) {
-                  this.oauthService.initImplicitFlow('some-state');
-                }
-            });
-            */
+  get familyName() {
+    const claims = this.oauthService.getIdentityClaims();
+    if (!claims) { return null; }
+    return claims['family_name'];
+  }
+
+  isAuthenticated(): boolean {
+    return this.oauthService.hasValidIdToken();
+  }
+
+  constructor(private oauthService: OAuthService) {
   }
 
   login() {
@@ -36,33 +37,15 @@ export class HomeComponent implements OnInit {
     this.oauthService.logOut();
   }
 
-  loadUserProfile(): void {
-    this.oauthService.loadUserProfile().then(up => (this.userProfile = up));
-  }
-
-  get givenName() {
-    var claims = this.oauthService.getIdentityClaims();
-    if (!claims) return null;
-    return claims['given_name'];
-  }
-
-  get familyName() {
-    var claims = this.oauthService.getIdentityClaims();
-    if (!claims) return null;
-    return claims['family_name'];
+  async loadUserProfile(): Promise<void> {
+    const up = await this.oauthService.loadUserProfile();
+    this.userProfile = up;
   }
 
   testSilentRefresh() {
-    /*
-         * Tweak config for implicit flow.
-         * This is needed b/c this sample uses both flows
-        */
-    //this.oauthService.clientId = "spa-demo";
-    this.oauthService.oidc = true;
-
     this.oauthService
       .silentRefresh()
-      .then(info => console.debug('refresh ok', info))
+      .then(info => console.log('refresh ok', info))
       .catch(err => console.error('refresh error', err));
   }
 

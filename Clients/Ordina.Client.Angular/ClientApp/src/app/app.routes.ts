@@ -1,5 +1,6 @@
 import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
+import { ValuesComponent } from './values/values.component';
 
 const APP_ROUTES: Routes = [
   {
@@ -10,6 +11,10 @@ const APP_ROUTES: Routes = [
   {
     path: 'home',
     component: HomeComponent
+  },
+  {
+    path: 'values',
+    component: ValuesComponent
   },
   {
     path: '**',
