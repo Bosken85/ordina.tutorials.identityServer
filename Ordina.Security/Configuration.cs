@@ -15,7 +15,14 @@ namespace Ordina.Security
         {
             new IdentityServer4.Models.IdentityResources.OpenId(),
             new IdentityServer4.Models.IdentityResources.Profile(),
-            new IdentityServer4.Models.IdentityResources.Address()
+            new IdentityServer4.Models.IdentityResources.Address(),
+            new IdentityResource("roles", "Your roles", new List<string> { "role" }),
+            new IdentityResource("ordina", "Your Ordina information", new List<string>
+            {
+                "unit",
+                "function",
+                "years_service",
+            })
         };
 
         public static IEnumerable<ApiResource> ApiResources = new List<ApiResource>
@@ -29,8 +36,10 @@ namespace Ordina.Security
             {
                 ClientId = "mvc",
                 ClientName = "MVC Client",
+
                 AllowedGrantTypes = GrantTypes.Hybrid,
                 AlwaysIncludeUserClaimsInIdToken = false, //is the default and is done to minimize the payload of the id_token
+
                 ClientSecrets =
                 {
                     new Secret("secret".Sha256())
@@ -42,9 +51,43 @@ namespace Ordina.Security
                     IdentityServerConstants.StandardScopes.OpenId,
                     IdentityServerConstants.StandardScopes.Profile,
                     IdentityServerConstants.StandardScopes.Address,
+                    IdentityServerConstants.StandardScopes.Email,
+                    "roles",
+                    "ordina",
                     "demo_api"
                 },
                 AllowOfflineAccess = true
+            },
+            // SPA client using implicit flow
+            new Client
+            {
+                ClientId = "spa",
+                ClientName = "SPA Client",
+
+                AllowedGrantTypes = GrantTypes.Implicit,
+                AllowAccessTokensViaBrowser = true,
+                RequireConsent = false, // Needs to be false to enable silent refreshes
+                AccessTokenLifetime = 30,
+
+                RedirectUris =
+                {
+                    "https://localhost:44323/index.html",
+                    "https://localhost:44323/silent-refresh.html"
+                },
+
+                PostLogoutRedirectUris = { "https://localhost:44323/index.html" },
+                AllowedCorsOrigins = { "https://localhost:44323" },
+
+                AllowedScopes =
+                {
+                    IdentityServerConstants.StandardScopes.OpenId,
+                    IdentityServerConstants.StandardScopes.Profile,
+                    IdentityServerConstants.StandardScopes.Address,
+                    IdentityServerConstants.StandardScopes.Email,
+                    "roles",
+                    "ordina",
+                    "demo_api"
+                }
             }
         };
 
@@ -59,7 +102,26 @@ namespace Ordina.Security
                 {
                     new Claim("given_name", "Kevin"),
                     new Claim("family_name", "Bosteels"),
-                    new Claim("address", "Red Street 16, 1000 Brussels, Belgium")
+                    new Claim("email", "kevin.bosteels@ordina.com"),
+                    new Claim("address", "Red Street 16, 1000 Brussels, Belgium"),
+                    new Claim("role", "Employee"),
+                    new Claim("unit", "NCore"),
+                    new Claim("function", "Developer"),
+                    new Claim("years_service", "3")
+                }
+            },
+            new TestUser
+            {
+                SubjectId = "85441825-C3EC-4314-8102-08EE8699D96B",
+                Username = "guest",
+                Password = "pass",
+                Claims = new List<Claim>
+                {
+                    new Claim("given_name", "Guest"),
+                    new Claim("family_name", "Anonymous"),
+                    new Claim("email", "guest.anonymous@gmail.com"),
+                    new Claim("address", "Green Street 18, 1000 Brussels, Belgium"),
+                    new Claim("role", "Guest")
                 }
             }
         };

@@ -1,0 +1,70 @@
+<strong>Status: {{ isAuthenticated() ? 'logged in' : 'logged out' }} </strong>
+<h1 *ngIf="!givenName">Welcome!</h1>
+<h1 *ngIf="givenName">Welcome, {{givenName}} {{familyName}}!</h1>
+
+<div class="panel panel-default">
+    <div class="panel-body">
+        <p>Login with Authorization Server</p>
+        <ng-container *ngIf="!isAuthenticated()">
+            <div class="checkbox">
+                <label><input type="checkbox" [(ngModel)]="requestAccessToken"> Request AccessToken</label>
+            </div>
+            <button class="btn btn-default" (click)="login()">Login</button>
+        </ng-container>
+        <ng-container *ngIf="isAuthenticated()">
+            <button class="btn btn-default" (click)="logout()">Logout</button>
+            <button class="btn btn-default" (click)="testSilentRefresh()">Test silent refresh</button>
+            <button class="btn btn-default" *ngIf="access_token" (click)="loadUserProfile()">Load User Profile</button>
+        </ng-container>
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Roles
+    </div>
+    <div class="panel-body">
+        <b>Guest:</b> guest/pass
+    </div>
+    <div class="panel-body">
+        <b>Employee:</b> kevin/pass
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Token validity
+    </div>
+    <div class="panel-body">
+        <b>access_token_expiration:</b> {{access_token_expiration | date:'dd/MM/yyyy HH:mm:ss'}}
+    </div>
+    <div class="panel-body">
+        <b>id_token_expiration:</b> {{id_token_expiration | date:'dd/MM/yyyy HH:mm:ss'}}
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Tokens
+    </div>
+    <div class="panel-body">
+        <p class="clipboard" (click)="copyToClipboard(id_token)">
+            <b>id_token:</b> {{id_token}}
+        </p>
+        <p class="clipboard" (click)="copyToClipboard(access_token)">
+            <b>access_token:</b> {{access_token}}
+        </p>
+    </div>
+</div>
+
+<div class="panel panel-default" *ngIf="userProfile">
+    <div class="panel-heading">
+        User profile
+    </div>
+    <div class="panel-body">
+        <div>
+            <pre>{{userProfile | json}}</pre>
+        </div>
+
+    </div>
+</div>
