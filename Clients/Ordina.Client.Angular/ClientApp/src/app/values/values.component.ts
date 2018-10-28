@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
-import { ValuesService } from '../services/values.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-values',
@@ -8,12 +7,12 @@ import { ValuesService } from '../services/values.service';
   styleUrls: ['./values.component.css']
 })
 export class ValuesComponent implements OnInit {
-  values: Observable<Array<string>>;
+  values: Array<string>;
 
-  constructor(private valuesService: ValuesService) {
+  constructor(private route: ActivatedRoute) {
   }
 
   ngOnInit() {
-    this.values = this.valuesService.get();
+    this.values = this.route.snapshot.data['values'];
   }
 }

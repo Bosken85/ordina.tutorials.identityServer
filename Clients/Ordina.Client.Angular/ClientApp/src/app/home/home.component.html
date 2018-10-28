@@ -9,7 +9,7 @@
             <div class="checkbox">
                 <label><input type="checkbox" [(ngModel)]="requestAccessToken"> Request AccessToken</label>
             </div>
-            <button class="btn btn-default" (click)="login()" >Login</button>
+            <button class="btn btn-default" (click)="login()">Login</button>
         </ng-container>
         <ng-container *ngIf="isAuthenticated()">
             <button class="btn btn-default" (click)="logout()">Logout</button>
@@ -20,12 +20,21 @@
 </div>
 
 <div class="panel panel-default">
+    <div class="panel-heading">
+        Roles
+    </div>
     <div class="panel-body">
-        <b>Username/Password:</b> kevin/pass
+        <b>Guest:</b> guest/pass
+    </div>
+    <div class="panel-body">
+        <b>Employee:</b> kevin/pass
     </div>
 </div>
 
 <div class="panel panel-default">
+    <div class="panel-heading">
+        Token validity
+    </div>
     <div class="panel-body">
         <b>access_token_expiration:</b> {{access_token_expiration | date:'dd/MM/yyyy HH:mm:ss'}}
     </div>
@@ -35,15 +44,25 @@
 </div>
 
 <div class="panel panel-default">
+    <div class="panel-heading">
+        Tokens
+    </div>
     <div class="panel-body">
-        <p>
-            <b>access_token:</b> {{access_token}}
-        </p>
-        <p>
+        <p class="clipboard" (click)="copyToClipboard(id_token)">
             <b>id_token:</b> {{id_token}}
         </p>
-        <div *ngIf="userProfile">
-            <b>user profile:</b>
+        <p class="clipboard" (click)="copyToClipboard(access_token)">
+            <b>access_token:</b> {{access_token}}
+        </p>
+    </div>
+</div>
+
+<div class="panel panel-default" *ngIf="userProfile">
+    <div class="panel-heading">
+        User profile
+    </div>
+    <div class="panel-body">
+        <div>
             <pre>{{userProfile | json}}</pre>
         </div>
 

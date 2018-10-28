@@ -1,5 +1,7 @@
 import { RouterModule, Routes } from '@angular/router';
+import { NgxPermissionsGuard } from 'ngx-permissions';
 import { HomeComponent } from './home/home.component';
+import { ContactResolve } from './services/values.resolve';
 import { ValuesComponent } from './values/values.component';
 
 const APP_ROUTES: Routes = [
@@ -14,7 +16,22 @@ const APP_ROUTES: Routes = [
   },
   {
     path: 'values',
-    component: ValuesComponent
+    component: ValuesComponent,
+    resolve: {
+      values: ContactResolve
+    },
+    canActivate: [NgxPermissionsGuard],
+    data: {
+      permissions: {
+        only: 'NCORE_EMPLOYEE',
+        redirectTo: {
+          navigationCommands: ['home'],
+          navigationExtras: {
+            skipLocationChange: true
+          }
+        }
+      }
+    }
   },
   {
     path: '**',
