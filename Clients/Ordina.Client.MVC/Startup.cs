@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Ordina.Client.MVC
 {
@@ -37,25 +38,49 @@ namespace Ordina.Client.MVC
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
+            var cookieName = "Cookies";
             services.AddAuthentication(options =>
             {
-                options.DefaultScheme = "Cookies";
+                options.DefaultScheme = cookieName;
                 options.DefaultChallengeScheme = "oidc";
-            }).AddCookie("Cookies")
+            }).AddCookie(cookieName)
               .AddOpenIdConnect("oidc", options =>
                {
-                   options.SignInScheme = "Cookies";
+                   options.SignInScheme = cookieName;
                    options.Authority = "https://localhost:44385/";
                    options.ClientId = "mvc";
                    options.ClientSecret = "secret";
                    options.ResponseType = "code id_token";
-                   options.SaveTokens = true;
-                   options.GetClaimsFromUserInfoEndpoint = true;
+                   
+                   //Required to get tokens from HttpContext
+                   options.SaveTokens = true; 
+
+                   //Required to fetch additional claims because we kept the initial id_token as small as possible
+                   options.GetClaimsFromUserInfoEndpoint = true; 
+
+                   #region Manage Scopes
+
                    options.Scope.Add("openid");
                    options.Scope.Add("profile");
                    options.Scope.Add("address");
-                   options.Scope.Add("offline_access");
+                   options.Scope.Add("roles");
+                   options.Scope.Add("ordina");
                    options.Scope.Add("demo_api");
+
+                   #endregion
+
+                   #region Manage claims
+
+                   options.ClaimActions.DeleteClaim("sid");
+                   options.ClaimActions.DeleteClaim("idp");
+
+                   //Add additional claims when fetching from userinfo endpoint
+                   options.ClaimActions.MapUniqueJsonKey("role", "role");
+                   options.ClaimActions.MapUniqueJsonKey("unit", "unit");
+                   options.ClaimActions.MapUniqueJsonKey("function", "function");
+                   options.ClaimActions.MapUniqueJsonKey("years_service", "years_service");
+
+                   #endregion
                });
         }
 
