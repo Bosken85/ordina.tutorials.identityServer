@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { AuthorizationNotifier, AuthorizationRequest, BaseTokenRequestHandler, DefaultCrypto, GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN, LocalStorageBackend, StorageBackend, TokenRequest, TokenResponse } from '@openid/appauth';
 import { AngularRequestor } from './app-auth/angularRequestor';
+import { EndSessionRequest } from './app-auth/endSessionRequest';
 import { IonicAppBrowserProvider } from './app-auth/IonicAppBrowser';
 import { IonicAuthorizationRequestHandler } from './app-auth/ionicAuthorizationRequestHandler';
 import { IonicAuthorizationServiceConfiguration } from './app-auth/IonicAuthorizationServiceConfiguration';
+import { IonicEndSessionHandler } from './app-auth/ionicEndSessionRequestHandler';
 
 const OpenIDConnectURL = "https://localhost:44385";
 const ClientId = "ionic-auth-code";
@@ -37,7 +39,7 @@ export class AuthServiceProvider {
     private code_verifier: string;
 
     private authorizationHandler: IonicAuthorizationRequestHandler;
-    // private endSessionHandler: IonicEndSessionHandler;
+    private endSessionHandler: IonicEndSessionHandler;
     private notifier: AuthorizationNotifier;
 
     private configuration: IonicAuthorizationServiceConfiguration;
@@ -50,11 +52,11 @@ export class AuthServiceProvider {
     }
 
     private init() {
-        // this.endSessionHandler = new IonicEndSessionHandler(this.ionicBrowserView);
 
         this.notifier = new AuthorizationNotifier();
         // uses a redirect flow
         this.authorizationHandler = new IonicAuthorizationRequestHandler(this.ionicBrowserView);
+        this.endSessionHandler = new IonicEndSessionHandler(this.ionicBrowserView);
         // set notifier to deliver responses
         this.authorizationHandler.setAuthorizationNotifier(this.notifier);
         // set a listener to listen for authorization responses
@@ -108,13 +110,11 @@ export class AuthServiceProvider {
     public async startupAsync(signInCallback: Function, signOutCallback: Function) {
         this.authFinishedCallback = signInCallback;
         this.authLogOutCallback = signOutCallback;
-        debugger;
         await this.tryLoadTokenResponseAsync();
     }
 
     public AuthorizationCallback(url: string) {
         if ((url).indexOf(RedirectUri) === 0) {
-            debugger;
             this.ionicBrowserView.CloseWindow();
             this.storageBackend.setItem(AUTHORIZATION_RESPONSE_KEY, url).catch(error => {
                 this.authCompletedReject(error);
@@ -141,31 +141,6 @@ export class AuthServiceProvider {
         }
     }
 
-    // public async AuthorizationCallback(url: string) {
-    //     try {
-
-    //         if ((url).indexOf(RedirectUri) === 0) {
-
-    //             this.ionicBrowserView.CloseWindow();
-    //             await this.storageBackend.setItem(AUTHORIZATION_RESPONSE_KEY, url);
-    //             this.authorizationHandler.completeAuthorizationRequestIfPossible();
-
-    //         }
-    //         else if ((url).indexOf(EndSessionRedirectUri) === 0) {
-
-    //             this.ionicBrowserView.CloseWindow();
-    //             await this.storageBackend.clear();
-    //             await this.resetAuthCompletedPromise();
-    //             delete this.tokenResponse;
-    //             delete this.code_verifier;
-
-    //             this.authLogOutCallback();
-    //         }
-    //     } catch (error) {
-    //         this.authCompletedReject(error);
-    //     }
-    // }
-
     public async waitAuthenticated() {
         await this.authCompletedTask;
 
@@ -185,8 +160,8 @@ export class AuthServiceProvider {
         await this.discoveryTask;
 
         let id_token = this.tokenResponse.idToken;
-        // let request = new EndSessionRequest(id_token, EndSessionRedirectUri);
-        // this.endSessionHandler.performEndSessionRequest(this.configuration, request);
+        let request = new EndSessionRequest(id_token, EndSessionRedirectUri);
+        this.endSessionHandler.performEndSessionRequest(this.configuration, request);
     }
 
     private async requestAuthorizationToken() {

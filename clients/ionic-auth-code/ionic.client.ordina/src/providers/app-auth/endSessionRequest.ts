@@ -1,41 +1,40 @@
+import { DefaultCrypto } from "@openid/appauth";
 
+export interface EndSessionRequestJson {
+    idTokenHint: string;
+    postLogoutRedirectURI: string;
+    state?: string;
+}
 
+const BYTES_LENGTH = 10;
+const newState = function(crypto: DefaultCrypto): string {
+  return crypto.generateRandom(BYTES_LENGTH);
+};
 
-// export interface EndSessionRequestJson {
-//   idTokenHint: string;
-//   postLogoutRedirectURI: string;
-//   state?: string;
-// }
+export class EndSessionRequest {
 
-// // const BYTES_LENGTH = 10;
-// // const newState = function(crypto: RandomGenerator): string {
-// //   return generateRandom(BYTES_LENGTH);
-// // };
+    state: string;
 
-// export class EndSessionRequest {
+    constructor(
+        public idTokenHint: string,
+        public postLogoutRedirectURI: string,
+        state?: string,
+        crypto: DefaultCrypto = new DefaultCrypto()) {
+        this.state = state || newState(crypto);
+    }
 
-//   state: string;
+    toJson(): EndSessionRequestJson {
+        let json: EndSessionRequestJson = { idTokenHint: this.idTokenHint, postLogoutRedirectURI: this.postLogoutRedirectURI };
 
-//   constructor(
-//     public idTokenHint: string,
-//     public postLogoutRedirectURI: string,
-//     state?: string,
-//     generateRandom = cryptoGenerateRandom) {
-//       this.state = state || newState(generateRandom);
-//     }
+        if (this.state) {
+            json['state'] = this.state;
+        }
 
-//   toJson(): EndSessionRequestJson {
-//     let json: EndSessionRequestJson = {idTokenHint: this.idTokenHint, postLogoutRedirectURI : this.postLogoutRedirectURI };
+        return json;
+    }
 
-//     if (this.state) {
-//       json['state'] = this.state;
-//     }
-
-//     return json;
-//   }
-
-//   static fromJson(input: EndSessionRequestJson): EndSessionRequest {
-//     return new EndSessionRequest(
-//         input.idTokenHint, input.postLogoutRedirectURI, input.state);
-//   }
-// }
+    static fromJson(input: EndSessionRequestJson): EndSessionRequest {
+        return new EndSessionRequest(
+            input.idTokenHint, input.postLogoutRedirectURI, input.state);
+    }
+}

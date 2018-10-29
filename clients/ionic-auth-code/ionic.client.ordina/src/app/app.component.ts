@@ -27,7 +27,6 @@ export class MyApp {
       };
 
       await this.authService.startupAsync(signin => {
-        debugger;
         //Register the callback for when authService has tried handling signin
         this.nav.setRoot('ProfilePage');
       }, signout => {

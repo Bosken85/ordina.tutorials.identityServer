@@ -11,20 +11,17 @@ export class IonicBrowserProvider {
   public ShowWindow(url: string) {
     this.safariViewController.isAvailable().then(available => {
       if(available) {
-        let optionSafari: SafariViewControllerOptions = {
+        await this.safariViewController.show({
           url: url,
           enterReaderModeIfAvailable: true,
-        }
-        await this.safariViewController.show(optionSafari).toPromise();
+        }).toPromise();
       } else {
-        let options: InAppBrowserOptions = {
+        this.inAppLogin = this.inAppBrowser.create(url, '_system', {
           location: 'no',
           zoom: 'no',
           clearcache: 'yes',
           clearsessioncache: 'yes'
-        }
-  
-        this.inAppLogin = this.inAppBrowser.create(url, '_system', options);
+        });
         this.inAppLogin.show();
       }
     });
@@ -34,7 +31,7 @@ export class IonicBrowserProvider {
     this.safariViewController.isAvailable().then(available => {
       if(available) {
         await this.safariViewController.hide().toPromise();
-      } else {
+      } else if(this.inAppBrowser) {
         this.inAppLogin.close();
       }
     });
