@@ -28,6 +28,23 @@ namespace Ordina.Security
         public static IEnumerable<ApiResource> ApiResources = new List<ApiResource>
         {
             new ApiResource("demo_api", "Demo API")
+            {
+                UserClaims =
+                {
+                    "given_name",
+                    "family_name",
+                    "role"
+                }
+            },
+            new ApiResource("private_api", "Private API")
+            {
+                UserClaims =
+                {
+                    "given_name",
+                    "family_name",
+                    "role"
+                }
+            }
         };
 
         public static IEnumerable<Client> Clients = new List<Client>
@@ -38,7 +55,10 @@ namespace Ordina.Security
                 ClientName = "MVC Client",
 
                 AllowedGrantTypes = GrantTypes.Hybrid,
-                AlwaysIncludeUserClaimsInIdToken = false, //is the default and is done to minimize the payload of the id_token
+                // This is the default and is done to minimize the payload of the id_token
+                AlwaysIncludeUserClaimsInIdToken = false, 
+                // this is set to true because we pass identity claims in the access token
+                UpdateAccessTokenClaimsOnRefresh = true,
 
                 ClientSecrets =
                 {
@@ -87,6 +107,20 @@ namespace Ordina.Security
                     "roles",
                     "ordina",
                     "demo_api"
+                }
+            },
+            // Add the api that will delegate calls to the private api
+            new Client
+            {
+                ClientId = "demo_api.client",
+                ClientSecrets = new List<Secret>
+                {
+                    new Secret("secret".Sha256())
+                },
+                AllowedGrantTypes = { "delegation" },
+                AllowedScopes = new List<string>
+                {
+                    "private_api"
                 }
             }
         };

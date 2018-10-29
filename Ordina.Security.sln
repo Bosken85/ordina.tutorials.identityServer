@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ordina.Client.MVC", "Client
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ordina.Api", "Resources\Ordina.Api\Ordina.Api.csproj", "{3B6B3618-D075-4FA6-B65D-B472E69E5E64}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ordina.Client.Angular", "Clients\Ordina.Client.Angular\Ordina.Client.Angular.csproj", "{3087BB3E-841D-4B64-A50B-E4BBAAD078B4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ordina.Client.Angular", "Clients\Ordina.Client.Angular\Ordina.Client.Angular.csproj", "{3087BB3E-841D-4B64-A50B-E4BBAAD078B4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ordina.Api.Private", "Ordina.Api.Private\Ordina.Api.Private.csproj", "{4C5ACDD3-80E0-451A-941E-0232C7D6A436}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,6 +39,10 @@ Global
 		{3087BB3E-841D-4B64-A50B-E4BBAAD078B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3087BB3E-841D-4B64-A50B-E4BBAAD078B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3087BB3E-841D-4B64-A50B-E4BBAAD078B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C5ACDD3-80E0-451A-941E-0232C7D6A436}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C5ACDD3-80E0-451A-941E-0232C7D6A436}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C5ACDD3-80E0-451A-941E-0232C7D6A436}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C5ACDD3-80E0-451A-941E-0232C7D6A436}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -45,6 +51,7 @@ Global
 		{56E028C7-EEEB-47A6-B4EA-C6B1758B5749} = {D95B35B5-0960-4328-9732-1DBB608C4E0C}
 		{3B6B3618-D075-4FA6-B65D-B472E69E5E64} = {6468FDA7-FB84-4789-A6C4-6336781B57AE}
 		{3087BB3E-841D-4B64-A50B-E4BBAAD078B4} = {D95B35B5-0960-4328-9732-1DBB608C4E0C}
+		{4C5ACDD3-80E0-451A-941E-0232C7D6A436} = {6468FDA7-FB84-4789-A6C4-6336781B57AE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9298F2A1-4B0F-41BF-A0AA-B25B043A6988}

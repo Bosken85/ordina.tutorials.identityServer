@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Ordina.Security.Extensions;
 
 namespace Ordina.Security
 {
@@ -23,7 +25,8 @@ namespace Ordina.Security
                 .AddInMemoryPersistedGrants()
                 .AddInMemoryCaching()
                 .AddTestUsers(Configuration.Users)
-                .AddDeveloperSigningCredential();
+                .AddDeveloperSigningCredential()
+                .AddExtensionGrantValidator<DelegationGrantValidator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

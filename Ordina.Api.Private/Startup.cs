@@ -13,9 +13,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Ordina.Client.MVC;
 
-namespace Ordina.Api
+namespace Ordina.Api.Private
 {
     public class Startup
     {
@@ -29,22 +28,15 @@ namespace Ordina.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors(x =>
-            {
-                x.AddDefaultPolicy(p => p.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().AllowCredentials());
-            });
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-
             services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
                 .AddIdentityServerAuthentication(options =>
                 {
                     options.Authority = "https://localhost:44385/";
-                    options.ApiName = "demo_api";
-                    options.SaveToken = true;
+                    options.ApiName = "private_api";
                 });
 
-            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.TryAddScoped<IPrivateApiHttpClient, PrivateApiHttpClient>();
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -60,7 +52,6 @@ namespace Ordina.Api
             }
 
             app.UseHttpsRedirection();
-            app.UseCors();
             app.UseAuthentication();
             app.UseMvc();
         }
