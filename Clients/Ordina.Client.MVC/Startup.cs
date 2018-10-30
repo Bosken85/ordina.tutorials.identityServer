@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using IdentityModel.Client;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -11,7 +14,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Ordina.Client.MVC.Authorization;
 
 namespace Ordina.Client.MVC
@@ -57,7 +62,14 @@ namespace Ordina.Client.MVC
             {
                 options.DefaultScheme = cookieName;
                 options.DefaultChallengeScheme = "oidc";
-            }).AddCookie(cookieName)
+
+            }).AddCookie(cookieName, options =>
+                {
+                    options.Events = new CookieAuthenticationEvents
+                    {
+                        OnValidatePrincipal = async context => await RefreshTokens(context)
+                    };
+                })
               .AddOpenIdConnect("oidc", options =>
                {
                    options.SignInScheme = cookieName;
@@ -65,12 +77,12 @@ namespace Ordina.Client.MVC
                    options.ClientId = "mvc";
                    options.ClientSecret = "secret";
                    options.ResponseType = "code id_token";
-                   
+
                    //Required to get tokens from HttpContext
-                   options.SaveTokens = true; 
+                   options.SaveTokens = true;
 
                    //Required to fetch additional claims because we kept the initial id_token as small as possible
-                   options.GetClaimsFromUserInfoEndpoint = true; 
+                   options.GetClaimsFromUserInfoEndpoint = true;
 
                    #region Manage Scopes
 
@@ -80,6 +92,7 @@ namespace Ordina.Client.MVC
                    options.Scope.Add("roles");
                    options.Scope.Add("ordina");
                    options.Scope.Add("demo_api");
+                   options.Scope.Add("offline_access");
 
                    #endregion
 
@@ -98,7 +111,7 @@ namespace Ordina.Client.MVC
                    #endregion
                });
 
-            
+
 
         }
 
@@ -120,6 +133,49 @@ namespace Ordina.Client.MVC
             app.UseCookiePolicy();
             app.UseAuthentication();
             app.UseMvcWithDefaultRoute();
+        }
+
+        private async Task RefreshTokens(CookieValidatePrincipalContext context)
+        {
+            // since our cookie lifetime is based on the access token one,
+            // check if we're more than halfway of the cookie lifetime
+            var now = DateTimeOffset.UtcNow;
+            var timeElapsed = now.Subtract(context.Properties.IssuedUtc.Value);
+            var timeRemaining = context.Properties.ExpiresUtc.Value.Subtract(now);
+
+            if (timeElapsed > timeRemaining)
+            {
+                var refreshToken = context.Properties.GetTokenValue(OpenIdConnectParameterNames.RefreshToken);
+                var discoveryClient = new DiscoveryClient("https://localhost:44385/");
+                var metaDataReponse = await discoveryClient.GetAsync();
+
+                var tokenClient = new TokenClient(metaDataReponse.TokenEndpoint, "mvc", "secret");
+                var tokenResult = await tokenClient.RequestRefreshTokenAsync(refreshToken);
+                if (!tokenResult.IsError)
+                {
+                    var updateTokens = new List<AuthenticationToken>
+                        {
+                            new AuthenticationToken
+                            {
+                                Name = OpenIdConnectParameterNames.IdToken,
+                                Value = tokenResult.IdentityToken
+                            },
+                            new AuthenticationToken
+                            {
+                                Name = OpenIdConnectParameterNames.AccessToken,
+                                Value = tokenResult.AccessToken
+                            },
+                            new AuthenticationToken
+                            {
+                                Name = OpenIdConnectParameterNames.RefreshToken,
+                                Value = tokenResult.RefreshToken
+                            }
+                        };
+
+                    context.Properties.StoreTokens(updateTokens);
+                    context.ShouldRenew = true;
+                }
+            }
         }
     }
 }
