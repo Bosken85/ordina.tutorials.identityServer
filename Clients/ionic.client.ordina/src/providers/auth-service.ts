@@ -7,20 +7,9 @@ import { IonicAuthorizationRequestHandler } from './app-auth/ionicAuthorizationR
 import { IonicAuthorizationServiceConfiguration } from './app-auth/IonicAuthorizationServiceConfiguration';
 import { IonicEndSessionHandler } from './app-auth/ionicEndSessionRequestHandler';
 import { UserInfoRequestHandler } from './app-auth/userInfoRequestHandler';
+import { authConfig } from './auth-config';
 
-const OpenIDConnectURL = "https://localhost:44385";
-const ClientId = "ionic-auth-code";
-const Scopes = "openid offline_access profile";
-const RedirectUri = "ordinaionic://profile";
-//URL Example: com.my.app://token
-const EndSessionRedirectUri = "ordinaionic://home";
-//this should be different from redirectURI
 
-//CONST values (magic strings):
-const TOKEN_RESPONSE_KEY = "token_response";
-const AUTHORIZATION_RESPONSE_KEY = "auth_response";
-
-const nowInSeconds = () => Math.round(new Date().getTime() / 1000);
 
 @Injectable()
 export class AuthServiceProvider {
@@ -109,6 +98,7 @@ export class AuthServiceProvider {
     }
 
     public async getUserInfo() {
+        debugger;
         await this.discoveryTask;
         const authenticated = await this.waitAuthenticated();
         
@@ -126,12 +116,12 @@ export class AuthServiceProvider {
     }
 
     public async AuthorizationCallback(url: string): Promise<boolean> {
-        if ((url).indexOf(RedirectUri) === 0) {
+        if ((url).indexOf(authConfig.redirectUri) === 0) {
             // this.ionicBrowserView.CloseWindow();
-            await this.storageBackend.setItem(AUTHORIZATION_RESPONSE_KEY, url);
+            await this.storageBackend.setItem(authConfig.AUTHORIZATION_RESPONSE_KEY, url);
             await this.authorizationHandler.completeAuthorizationRequestIfPossible();
             return true;
-        } else if ((url).indexOf(EndSessionRedirectUri) === 0) {
+        } else if ((url).indexOf(authConfig.endSessionRedirectUri) === 0) {
             // this.ionicBrowserView.CloseWindow();
             await this.storageBackend.clear();
             this.resetAuthCompletedPromise();
@@ -161,7 +151,7 @@ export class AuthServiceProvider {
         await this.discoveryTask;
 
         const id_token = this.tokenResponse.idToken;
-        const request = new EndSessionRequest(id_token, EndSessionRedirectUri);
+        const request = new EndSessionRequest(id_token, authConfig.endSessionRedirectUri);
         this.endSessionHandler.performEndSessionRequest(this.configuration, request);
     }
 
@@ -172,9 +162,9 @@ export class AuthServiceProvider {
 
         // create a request
         const requestOptions = {
-            client_id: ClientId,
-            redirect_uri: RedirectUri,
-            scope: Scopes,
+            client_id: authConfig.clientId,
+            redirect_uri: authConfig.redirectUri,
+            scope: authConfig.scope,
             response_type: AuthorizationRequest.RESPONSE_TYPE_CODE + " id_token",
             state: undefined,
             extras: {
@@ -198,8 +188,8 @@ export class AuthServiceProvider {
         if (this.code) {
             // use the code to make the token request.
             request = new TokenRequest({
-                client_id: ClientId,
-                redirect_uri: RedirectUri,
+                client_id: authConfig.clientId,
+                redirect_uri: authConfig.redirectUri,
                 grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
                 code: this.code,
                 refresh_token: undefined,
@@ -223,8 +213,8 @@ export class AuthServiceProvider {
 
         if (this.tokenResponse) {
             request = new TokenRequest({
-                client_id: ClientId,
-                redirect_uri: RedirectUri,
+                client_id: authConfig.clientId,
+                redirect_uri: authConfig.redirectUri,
                 grant_type: GRANT_TYPE_REFRESH_TOKEN,
                 code: undefined,
                 refresh_token: this.tokenResponse.refreshToken,
@@ -248,7 +238,7 @@ export class AuthServiceProvider {
     public shouldRefresh() {
         if (this.tokenResponse != null) {
             if (this.tokenResponse.expiresIn) {
-                let now = nowInSeconds();
+                let now = Math.round(new Date().getTime() / 1000);
                 let timeSinceIssued = now - this.tokenResponse.issuedAt;
 
                 if (timeSinceIssued > this.tokenResponse.expiresIn / 2) {
@@ -271,7 +261,7 @@ export class AuthServiceProvider {
 
     private async fetchDiscovery(requestor: AngularRequestor) {
         try {
-            this.discoveryTask = IonicAuthorizationServiceConfiguration.fetchFromIssuer(OpenIDConnectURL, requestor);
+            this.discoveryTask = IonicAuthorizationServiceConfiguration.fetchFromIssuer(authConfig.issuer, requestor);
             let response = await this.discoveryTask;
             this.configuration = response;
 
@@ -284,7 +274,7 @@ export class AuthServiceProvider {
     //UTILS:
     private async saveTokenResponse(response: TokenResponse) {
         this.tokenResponse = response;
-        await this.storageBackend.setItem(TOKEN_RESPONSE_KEY, JSON.stringify(this.tokenResponse.toJson()));
+        await this.storageBackend.setItem(authConfig.TOKEN_RESPONSE_KEY, JSON.stringify(this.tokenResponse.toJson()));
     }
 
     private generateNonce(): string {
@@ -292,7 +282,7 @@ export class AuthServiceProvider {
     }
 
     private async tryLoadTokenResponseAsync(): Promise<TokenResponse> {
-        let item = await this.storageBackend.getItem(TOKEN_RESPONSE_KEY);
+        let item = await this.storageBackend.getItem(authConfig.TOKEN_RESPONSE_KEY);
 
         if (item) {
             this.tokenResponse = new TokenResponse(JSON.parse(item));

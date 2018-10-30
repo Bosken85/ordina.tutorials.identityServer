@@ -141,6 +141,9 @@ namespace Ordina.Security
                     IdentityServerConstants.StandardScopes.OpenId,
                     IdentityServerConstants.StandardScopes.Profile,
                     IdentityServerConstants.StandardScopes.Address,
+                    IdentityServerConstants.StandardScopes.Email,
+                    "roles",
+                    "ordina",
                     "demo_api"
                 },
                 AllowOfflineAccess = true,

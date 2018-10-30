@@ -27,13 +27,16 @@ export class ProfilePage {
     this.token = this.auth.getAccessTokenJson();
   }
 
-  async loadUserInfo() {
-    this.userInfo = await this.auth.getUserInfo();
+  loadUserInfo() {
+    this.auth.getUserInfo().then(result => this.userInfo = result);
   }
 
-  async reload() {
-    await this.auth.waitAuthenticated();
-    this.token = this.auth.getAccessTokenJson();
+  reload() {
+    this.auth.waitAuthenticated().then(result => {
+      if(result) {
+        this.token = this.auth.getAccessTokenJson()
+      }
+    });
   }
 
   logout(){
