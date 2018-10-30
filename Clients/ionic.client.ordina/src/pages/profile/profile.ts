@@ -16,6 +16,7 @@ import { AuthServiceProvider } from '../../providers/auth-service';
 })
 export class ProfilePage {
   token: any;
+  userInfo: any;
 
   constructor(public navCtrl: NavController, public navParams: NavParams, private auth: AuthServiceProvider) {
   }
@@ -24,6 +25,10 @@ export class ProfilePage {
     console.log('ionViewDidLoad ProfilePage');
     debugger;
     this.token = this.auth.getAccessTokenJson();
+  }
+
+  async loadUserInfo() {
+    this.userInfo = await this.auth.getUserInfo();
   }
 
   async reload() {

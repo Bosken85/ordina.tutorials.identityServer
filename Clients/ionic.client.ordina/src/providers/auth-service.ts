@@ -6,6 +6,7 @@ import { IonicBrowserProvider } from './app-auth/IonicAppBrowser';
 import { IonicAuthorizationRequestHandler } from './app-auth/ionicAuthorizationRequestHandler';
 import { IonicAuthorizationServiceConfiguration } from './app-auth/IonicAuthorizationServiceConfiguration';
 import { IonicEndSessionHandler } from './app-auth/ionicEndSessionRequestHandler';
+import { UserInfoRequestHandler } from './app-auth/userInfoRequestHandler';
 
 const OpenIDConnectURL = "https://localhost:44385";
 const ClientId = "ionic-auth-code";
@@ -40,6 +41,7 @@ export class AuthServiceProvider {
 
     private authorizationHandler: IonicAuthorizationRequestHandler;
     private endSessionHandler: IonicEndSessionHandler;
+    private userInfoHandler: UserInfoRequestHandler;
     private notifier: AuthorizationNotifier;
 
     private configuration: IonicAuthorizationServiceConfiguration;
@@ -52,10 +54,10 @@ export class AuthServiceProvider {
     }
 
     private init() {
-
         this.notifier = new AuthorizationNotifier();
         // uses a redirect flow
         this.authorizationHandler = new IonicAuthorizationRequestHandler(this.ionicBrowserView);
+        this.userInfoHandler = new UserInfoRequestHandler();
         this.endSessionHandler = new IonicEndSessionHandler(this.ionicBrowserView);
         // set notifier to deliver responses
         this.authorizationHandler.setAuthorizationNotifier(this.notifier);
@@ -106,6 +108,17 @@ export class AuthServiceProvider {
         }
     }
 
+    public async getUserInfo() {
+        await this.discoveryTask;
+        const authenticated = await this.waitAuthenticated();
+        
+        if(!authenticated) { return null; }
+
+        const access_token = this.tokenResponse.accessToken;
+        const userInfo = await this.userInfoHandler.performRequest(this.configuration, this.requestor, access_token);
+        return userInfo;
+    }
+
     public async startupAsync(signInCallback: Function, signOutCallback: Function) {
         this.authFinishedCallback = signInCallback;
         this.authLogOutCallback = signOutCallback;
@@ -147,8 +160,8 @@ export class AuthServiceProvider {
     public async signout() {
         await this.discoveryTask;
 
-        let id_token = this.tokenResponse.idToken;
-        let request = new EndSessionRequest(id_token, EndSessionRedirectUri);
+        const id_token = this.tokenResponse.idToken;
+        const request = new EndSessionRequest(id_token, EndSessionRedirectUri);
         this.endSessionHandler.performEndSessionRequest(this.configuration, request);
     }
 

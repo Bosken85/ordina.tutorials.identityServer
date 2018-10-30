@@ -33,8 +33,6 @@ export class MyApp {
         this.nav.setRoot('HomePage');
       });
 
-      // await this.authService.waitAuthenticated();
-
       if (this.authService.isAuthenticated()) {
         //If we are already authenticated (ie has valid token in storage) we can just go ahead into the application
         this.rootPage = 'ProfilePage';

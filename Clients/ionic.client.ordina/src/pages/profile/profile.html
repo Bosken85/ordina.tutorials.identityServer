@@ -14,7 +14,24 @@
 
 
 <ion-content padding>
-  <button ion-button (click)="logout()">Log Out</button>
+  <button ion-button (click)="loadUserInfo()">User Info</button>
   <button ion-button (click)="reload()">Reload</button>
-  {{token}}
+  <button ion-button (click)="logout()">Log Out</button>
+
+  <ion-card *ngIf="userInfo">
+    <ion-card-header>
+      <b>User Info</b>
+    </ion-card-header>
+    <ion-card-content>
+      {{userInfo | json}}
+    </ion-card-content>
+  </ion-card>
+  <ion-card *ngIf="token">
+    <ion-card-header>
+      <b>Access token</b>
+    </ion-card-header>
+    <ion-card-content>
+      {{token}}
+    </ion-card-content>
+  </ion-card>
 </ion-content>
