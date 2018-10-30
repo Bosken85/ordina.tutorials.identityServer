@@ -11,6 +11,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Ordina.Client.MVC.Authorization;
 
 namespace Ordina.Client.MVC
 {
@@ -33,10 +35,22 @@ namespace Ordina.Client.MVC
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.TryAddScoped<IDemoApiHttpClient, DemoApiHttpClient>();
+            services.AddScoped<IAuthorizationHandler, RequiresLevelAuthorizationHandler>();
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("CanReadValues", x =>
+                {
+                    x.RequireAuthenticatedUser();
+                    x.RequireClaim("unit", "NCore");
+                    x.RequireClaim("role", "Employee");
+                    x.AddRequirements(new RequiresLevel("Senior"));
+                });
+            });
 
             var cookieName = "Cookies";
             services.AddAuthentication(options =>
@@ -78,10 +92,14 @@ namespace Ordina.Client.MVC
                    options.ClaimActions.MapUniqueJsonKey("role", "role");
                    options.ClaimActions.MapUniqueJsonKey("unit", "unit");
                    options.ClaimActions.MapUniqueJsonKey("function", "function");
+                   options.ClaimActions.MapUniqueJsonKey("level", "level");
                    options.ClaimActions.MapUniqueJsonKey("years_service", "years_service");
 
                    #endregion
                });
+
+            
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -21,6 +21,7 @@ namespace Ordina.Security
             {
                 "unit",
                 "function",
+                "level",
                 "years_service",
             })
         };
@@ -167,6 +168,7 @@ namespace Ordina.Security
                     new Claim("role", "Employee"),
                     new Claim("unit", "NCore"),
                     new Claim("function", "Developer"),
+                    new Claim("level", "Senior"),
                     new Claim("years_service", "3")
                 }
             },

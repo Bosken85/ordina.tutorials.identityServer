@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace Ordina.Client.MVC.Controllers
 {
+    [Authorize]
     public class ValuesController : Controller
     {
         private readonly IDemoApiHttpClient _demoApiHttpClient;
@@ -16,6 +18,7 @@ namespace Ordina.Client.MVC.Controllers
             _demoApiHttpClient = demoApiHttpClient;
         }
 
+        [Authorize("CanReadValues")]
         public async Task<IActionResult> Index()
         {
             var client = await _demoApiHttpClient.GetClient();
