@@ -23,7 +23,7 @@ export class MyApp {
       this.statusBar.styleDefault();
 
       (<any>window).handleOpenURL = (url) => {
-        this.authService.AuthorizationCallback(url);
+        this.authService.AuthorizationCallback(url).then(login => this.nav.setRoot(login ? 'ProfilePage' : 'HomePage'));
       };
 
       await this.authService.startupAsync(signin => {

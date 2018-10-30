@@ -1,5 +1,5 @@
 import { AuthorizationError, AuthorizationRequest, AuthorizationRequestHandler, AuthorizationRequestResponse, AuthorizationResponse, AuthorizationServiceConfiguration, BasicQueryStringUtils, Crypto, DefaultCrypto, LocalStorageBackend, LocationLike, StorageBackend, StringMap } from "@openid/appauth";
-import { IonicAppBrowserProvider } from "./IonicAppBrowser";
+import { IonicBrowserProvider } from "./IonicAppBrowser";
 
 /** key for authorization request. */
 const authorizationRequestKey =
@@ -28,7 +28,7 @@ export class IonicAuthorizationRequestHandler extends AuthorizationRequestHandle
         // use the provided storage backend
         // or initialize local storage with the default storage backend which
         // uses window.localStorage
-        private ionicAppBrowserProvider: IonicAppBrowserProvider,
+        private ionicAppBrowserProvider: IonicBrowserProvider,
         public storageBackend: StorageBackend = new LocalStorageBackend(),
         public locationLike: LocationLike = window.location,
         utils = new BasicQueryStringUtils(),
@@ -52,7 +52,7 @@ export class IonicAuthorizationRequestHandler extends AuthorizationRequestHandle
                 authorizationServiceConfigurationKey(handle), JSON.stringify(configuration.toJson())),
         ]);
 
-        persisted.then(() => {
+        persisted.then(async () => {
             // make the redirect request
             let url = this.buildRequestUrl(configuration, request);
             console.log('Making a request to ', request, url);

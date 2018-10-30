@@ -1,6 +1,6 @@
 import { AuthorizationServiceConfiguration, BasicQueryStringUtils, StringMap } from "@openid/appauth";
 import { EndSessionRequest } from './endSessionRequest';
-import { IonicAppBrowserProvider } from "./IonicAppBrowser";
+import { IonicBrowserProvider } from "./IonicAppBrowser";
 
 
 export class IonicEndSessionHandler {
@@ -16,8 +16,8 @@ export class IonicEndSessionHandler {
         let url = this.buildRequestUrl(configuration, request);
 
         //Show in Browser Window
-        await this.ionicBrowserView.ShowWindow(url);
-        this.ionicBrowserView.CloseWindow();
+        this.ionicBrowserView.ShowWindow(url);
+        // this.ionicBrowserView.CloseWindow();
     }
 
     private buildRequestUrl(

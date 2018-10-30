@@ -22,6 +22,7 @@ export class ProfilePage {
 
   ionViewDidLoad() {
     console.log('ionViewDidLoad ProfilePage');
+    debugger;
     this.token = this.auth.getAccessTokenJson();
   }
 

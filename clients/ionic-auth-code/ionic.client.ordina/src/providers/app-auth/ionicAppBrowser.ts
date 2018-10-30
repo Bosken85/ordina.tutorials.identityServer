@@ -8,8 +8,8 @@ export class IonicBrowserProvider {
 
   constructor(private inAppBrowser: InAppBrowser, private safariViewController: SafariViewController) { }
 
-  public ShowWindow(url: string) {
-    this.safariViewController.isAvailable().then(available => {
+  public ShowWindow(url: string)  {
+    this.safariViewController.isAvailable().then(async available => {
       if(available) {
         await this.safariViewController.show({
           url: url,
@@ -28,9 +28,9 @@ export class IonicBrowserProvider {
   }
 
   public CloseWindow() {
-    this.safariViewController.isAvailable().then(available => {
+    return this.safariViewController.isAvailable().then(async available => {
       if(available) {
-        await this.safariViewController.hide().toPromise();
+        await this.safariViewController.hide();
       } else if(this.inAppBrowser) {
         this.inAppLogin.close();
       }

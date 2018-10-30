@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { AuthorizationNotifier, AuthorizationRequest, BaseTokenRequestHandler, DefaultCrypto, GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN, LocalStorageBackend, StorageBackend, TokenRequest, TokenResponse } from '@openid/appauth';
 import { AngularRequestor } from './app-auth/angularRequestor';
 import { EndSessionRequest } from './app-auth/endSessionRequest';
-import { IonicAppBrowserProvider } from './app-auth/IonicAppBrowser';
+import { IonicBrowserProvider } from './app-auth/IonicAppBrowser';
 import { IonicAuthorizationRequestHandler } from './app-auth/ionicAuthorizationRequestHandler';
 import { IonicAuthorizationServiceConfiguration } from './app-auth/IonicAuthorizationServiceConfiguration';
 import { IonicEndSessionHandler } from './app-auth/ionicEndSessionRequestHandler';
@@ -44,7 +44,7 @@ export class AuthServiceProvider {
 
     private configuration: IonicAuthorizationServiceConfiguration;
 
-    constructor(private requestor: AngularRequestor, private ionicBrowserView: IonicAppBrowserProvider) {
+    constructor(private requestor: AngularRequestor, private ionicBrowserView: IonicBrowserProvider) {
         this.storageBackend = new LocalStorageBackend();
         this.fetchDiscovery(this.requestor);
 
@@ -91,8 +91,7 @@ export class AuthServiceProvider {
 
     public async signin() {
         await this.discoveryTask;
-
-        this.tryLoadTokenResponseAsync();
+        await this.tryLoadTokenResponseAsync();
 
         try {
             if (this.tokenResponse && this.tokenResponse.isValid()) {
@@ -113,31 +112,20 @@ export class AuthServiceProvider {
         await this.tryLoadTokenResponseAsync();
     }
 
-    public AuthorizationCallback(url: string) {
+    public async AuthorizationCallback(url: string): Promise<boolean> {
         if ((url).indexOf(RedirectUri) === 0) {
-            this.ionicBrowserView.CloseWindow();
-            this.storageBackend.setItem(AUTHORIZATION_RESPONSE_KEY, url).catch(error => {
-                this.authCompletedReject(error);
-            }).then(x => {
-                this.authorizationHandler.completeAuthorizationRequestIfPossible().catch(error => {
-                    this.authCompletedReject(error);
-                });
-            });
-
+            // this.ionicBrowserView.CloseWindow();
+            await this.storageBackend.setItem(AUTHORIZATION_RESPONSE_KEY, url);
+            await this.authorizationHandler.completeAuthorizationRequestIfPossible();
+            return true;
         } else if ((url).indexOf(EndSessionRedirectUri) === 0) {
-
-            this.ionicBrowserView.CloseWindow();
-            this.storageBackend.clear()
-                .then(() => this.resetAuthCompletedPromise())
-                .then(() => {
-                    delete this.tokenResponse;
-                    delete this.code_verifier;
-
-                    this.authLogOutCallback();
-                })
-                .catch(error => {
-                    this.authCompletedReject(error);
-                });
+            // this.ionicBrowserView.CloseWindow();
+            await this.storageBackend.clear();
+            this.resetAuthCompletedPromise();
+            delete this.tokenResponse;
+            delete this.code_verifier;
+            this.authLogOutCallback();
+            return false;
         }
     }
 
@@ -206,10 +194,9 @@ export class AuthServiceProvider {
                     code_verifier: this.code_verifier
                 }
             });
-            this.tokenHandler.performTokenRequest(this.configuration, request).then(async response => {
-                await this.saveTokenResponse(response);
-                this.authCompletedResolve();
-            }).catch(error => this.authCompletedReject(error));
+            const response = await this.tokenHandler.performTokenRequest(this.configuration, request)
+            await this.saveTokenResponse(response);
+            this.authCompletedResolve();
         }
     }
 

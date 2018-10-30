@@ -7,7 +7,7 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { StatusBar } from '@ionic-native/status-bar';
 import { IonicApp, IonicErrorHandler, IonicModule } from 'ionic-angular';
 import { AngularRequestor } from '../providers/app-auth/angularRequestor';
-import { IonicAppBrowserProvider } from '../providers/app-auth/IonicAppBrowser';
+import { IonicBrowserProvider } from '../providers/app-auth/IonicAppBrowser';
 import { AuthServiceProvider } from '../providers/auth-service';
 import { MyApp } from './app.component';
 
@@ -31,7 +31,7 @@ import { MyApp } from './app.component';
     { provide: ErrorHandler, useClass: IonicErrorHandler },
     InAppBrowser,
     SafariViewController,
-    IonicAppBrowserProvider,
+    IonicBrowserProvider,
     AngularRequestor,
     AuthServiceProvider
   ]
