@@ -24,6 +24,7 @@ namespace Ordina.Client.MVC.Authorization
             }
 
             //filterContext can be used to fetch data from the request
+
             var levelClaim = context.User.Claims.FirstOrDefault(x => x.Type == "level");
             if (levelClaim == null || !levelClaim.Value.Equals(requirement.Level, StringComparison.InvariantCultureIgnoreCase))
             {

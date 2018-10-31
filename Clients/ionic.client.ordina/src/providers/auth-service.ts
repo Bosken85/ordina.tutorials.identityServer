@@ -98,7 +98,6 @@ export class AuthServiceProvider {
     }
 
     public async getUserInfo() {
-        debugger;
         await this.discoveryTask;
         const authenticated = await this.waitAuthenticated();
         

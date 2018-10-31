@@ -36,7 +36,20 @@ namespace Ordina.Security.Extensions
             }
 
             // get user's identity
-            var sub = result.Claims.FirstOrDefault(c => c.Type == "sub").Value;
+            var sub = result.Claims.Where(c => c.Type == "sub").Select(c => c.Value).FirstOrDefault();
+            if (sub == null)
+            {
+                context.Result = new GrantValidationResult(TokenRequestErrors.InvalidGrant);
+                return;
+            }
+
+            /*
+             * When using delegation for calling from client to client
+             * The claims can differ so we need to set the ClientId to the
+             * ClientId of the Client we want to access. This can be achieved
+             * by adding the following line of code:
+             * context.Request.Client.ClientId = "private_api";
+             */
 
             context.Result = new GrantValidationResult(sub, GrantType);
             return;

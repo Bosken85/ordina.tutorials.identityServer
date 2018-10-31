@@ -151,6 +151,7 @@ namespace Ordina.Security
                 RequirePkce = true,
                 RequireClientSecret = false,
                 AccessTokenLifetime = 30,
+                // Only needed for development. When running the app in production it's source is file:// so no cors is needed then.
                 AllowedCorsOrigins =  { "http://localhost:8101", "http://localhost:8080", "http://localhost:8100",  "http://192.168.0.243:8100" }
             }
         };
